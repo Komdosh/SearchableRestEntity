@@ -1,0 +1,44 @@
+package {{packageName}};
+
+import javax.annotation.processing.Generated;
+import pro.komdosh.searchablerestentity.search.SearchCriteria;
+import pro.komdosh.searchablerestentity.search.SearchService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
+import java.util.List;
+
+/**
+* Service for {@link {{entity}}}.
+*/
+@Generated(
+value = "{{entityServiceClassNameWithPackage}}",
+date = "{{date}}",
+comments = "{{comment}}"
+)
+@Service
+@RequiredArgsConstructor
+public class {{entityName}}Service extends SearchService<{{entity}}, {{entityDto}}> {
+
+private final {{entityName}}Repository {{getEntityNameStartLowerCase}}Repository;
+
+private final {{entityName}}Mapper {{getEntityNameStartLowerCase}}Mapper;
+
+@Override
+protected JpaSpecificationExecutor<{{entity}}> getSearchRepository() {
+  return {{getEntityNameStartLowerCase}}Repository;
+  }
+
+  @Override
+  protected {{entityDto}} entityToDto({{entity}} entity) {
+  return {{getEntityNameStartLowerCase}}Mapper.toDto(entity);
+  }
+
+  @Override
+  protected List<SearchCriteria> addRestrictions(List<SearchCriteria> criteriaList, Pageable pageable) {
+    return new ArrayList<>(criteriaList);
+  }
+}

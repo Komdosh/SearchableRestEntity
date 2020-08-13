@@ -1,0 +1,23 @@
+package {{packageName}};
+
+import javax.annotation.processing.Generated;
+import {{packageName}}.{{entityDto}};
+import pro.komdosh.searchablerestentity.search.SearchController;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+/**
+* Controller for {@link {{entity}}}.
+*/
+@RestController
+@RequestMapping(value = "/api/v1/{{path}}")
+@Generated(
+value = "{{controllerClassNameWithPackage}}",
+date = "{{date}}",
+comments = "{{comment}}"
+)
+public class {{entityName}}Controller extends SearchController<{{entityDto}}, {{entityService}}> {
+  public {{entityName}}Controller({{entityService}} searchService) {
+    super(searchService);
+  }
+}

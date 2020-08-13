@@ -1,0 +1,20 @@
+package {{packageName}};
+
+import javax.annotation.processing.Generated;
+import org.mapstruct.Mapper;
+
+import java.util.ArrayList;
+import java.util.List;
+
+/**
+* Mapper for {@link {{entity}}}.
+*/
+@Mapper(componentModel = "spring")
+@Generated(
+value = "{{entityMapperClassNameWithPackage}}",
+date = "{{date}}",
+comments = "{{comment}}"
+)
+public interface {{entityName}}Mapper {
+  {{entityDto}} toDto({{entity}} entity);
+}

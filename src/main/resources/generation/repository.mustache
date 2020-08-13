@@ -1,0 +1,20 @@
+package {{packageName}};
+
+import javax.annotation.Generated;
+import {{packageName}}.{{entity}};
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.stereotype.Repository;
+
+/**
+* Repository for {@link {{entity}}}.
+*/
+@Repository
+@Generated(
+    value = "{{repositoryClassNameWithPackage}}",
+    date = "{{date}}",
+    comments = "{{comment}}"
+)
+public interface {{entityName}}Repository extends JpaRepository<{{entity}}, Long>, JpaSpecificationExecutor<{{entity}}> {
+
+}
