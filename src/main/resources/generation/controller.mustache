@@ -1,7 +1,6 @@
 package {{packageName}};
 
 import javax.annotation.processing.Generated;
-import {{packageName}}.{{entityDto}};
 import pro.komdosh.searchablerestentity.search.SearchController;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -10,7 +9,7 @@ import org.springframework.web.bind.annotation.RestController;
 * Controller for {@link {{entity}}}.
 */
 @RestController
-@RequestMapping(value = "/api/v1/{{path}}")
+@RequestMapping(value = "{{path}}")
 @Generated(
 value = "{{controllerClassNameWithPackage}}",
 date = "{{date}}",
