@@ -11,10 +11,9 @@ import javax.persistence.criteria.*;
 import javax.persistence.metamodel.Attribute;
 import javax.validation.constraints.NotNull;
 import java.time.Instant;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
-import java.util.StringTokenizer;
+import java.util.*;
+
+import static pro.komdosh.searchablerestentity.search.SearchCriteria.ENTITY_JSON_FIELD_DELIMITER;
 
 @RequiredArgsConstructor
 @Getter
@@ -32,8 +31,8 @@ public class SearchSpecification<T> implements Specification<T> {
      */
     @NonNull
     public static <X> Path<X> computeFieldPath(@NotNull Root<?> root, @NotNull String key) {
-        if (key.contains(SearchCriteria.ENTITY_JSON_FIELD_DELIMITER)) {
-            return root.get(key.split(SearchCriteria.ENTITY_JSON_FIELD_DELIMITER)[0]);
+        if (key.contains(ENTITY_JSON_FIELD_DELIMITER)) {
+            return root.get(key.split(ENTITY_JSON_FIELD_DELIMITER)[0]);
         }
 
         // If the key is non-composite, then return a field from the root type:
@@ -118,9 +117,9 @@ public class SearchSpecification<T> implements Specification<T> {
                 }
 
                 String jsonPath;
-                int jsonColumnPropertySeparatorIndex = criteria.getKey().indexOf(SearchCriteria.ENTITY_JSON_FIELD_DELIMITER);
+                int jsonColumnPropertySeparatorIndex = criteria.getKey().indexOf(ENTITY_JSON_FIELD_DELIMITER);
 
-                jsonPath = "$." + criteria.getKey().substring(jsonColumnPropertySeparatorIndex + SearchCriteria.ENTITY_JSON_FIELD_DELIMITER.length());
+                jsonPath = "$." + criteria.getKey().substring(jsonColumnPropertySeparatorIndex + ENTITY_JSON_FIELD_DELIMITER.length());
 
                 return builder.function(
                     "jsonSearchIgnoreCase",
@@ -144,10 +143,10 @@ public class SearchSpecification<T> implements Specification<T> {
     @NonNull
     private Predicate getJsonContainsPredicate(@NotNull Root<T> root, @NotNull CriteriaBuilder builder) {
         String jsonPath;
-        int jsonColumnPropertySeparatorIndex = criteria.getKey().indexOf(SearchCriteria.ENTITY_JSON_FIELD_DELIMITER);
+        int jsonColumnPropertySeparatorIndex = criteria.getKey().indexOf(ENTITY_JSON_FIELD_DELIMITER);
 
         int arrowLastCharPosition = jsonColumnPropertySeparatorIndex
-            + SearchCriteria.ENTITY_JSON_FIELD_DELIMITER.length();
+            + ENTITY_JSON_FIELD_DELIMITER.length();
         jsonPath = "$." + criteria.getKey().substring(arrowLastCharPosition);
 
         return builder.function(
@@ -204,6 +203,10 @@ public class SearchSpecification<T> implements Specification<T> {
     }
 
     protected Object correctValueAccordingType(@NotNull Root<T> root) {
+        if (Set.of(".", SearchCriteria.ENTITY_JSON_FIELD_DELIMITER)
+            .stream().anyMatch(t -> criteria.getKey().contains(t))) {
+            return criteria.getValue();
+        }
         final Attribute<? super T, ?> attr = root.getModel().getAttributes()
             .stream().filter(attribute -> attribute.getName().equals(criteria.getKey())).findFirst()
             .orElseThrow(() -> new IllegalStateException(String.format("No field %s found", criteria.getKey())));
