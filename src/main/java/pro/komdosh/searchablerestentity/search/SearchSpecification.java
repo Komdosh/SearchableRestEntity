@@ -10,7 +10,10 @@ import javax.persistence.criteria.*;
 import javax.persistence.metamodel.Attribute;
 import javax.validation.constraints.NotNull;
 import java.time.Instant;
-import java.util.*;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
+import java.util.StringTokenizer;
 
 import static pro.komdosh.searchablerestentity.search.SearchCriteria.ENTITY_JSON_FIELD_DELIMITER;
 
@@ -259,7 +262,7 @@ public class SearchSpecification<T> implements Specification<T> {
     }
 
     protected Object correctValueAccordingType(@Nonnull Root<T> root) {
-        if (Set.of(".", ENTITY_JSON_FIELD_DELIMITER).stream().anyMatch(t -> criteria.getKey().contains(t))) {
+        if (criteria.getKey().contains(".") || criteria.getKey().contains(ENTITY_JSON_FIELD_DELIMITER)) {
             return criteria.getValue();
         }
         final Attribute<? super T, ?> attr = root.getModel().getAttributes()
