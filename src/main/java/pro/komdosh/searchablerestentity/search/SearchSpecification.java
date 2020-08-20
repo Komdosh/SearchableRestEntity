@@ -1,7 +1,6 @@
 package pro.komdosh.searchablerestentity.search;
 
 import lombok.Getter;
-import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.jpa.domain.Specification;
@@ -15,9 +14,9 @@ import java.util.*;
 
 import static pro.komdosh.searchablerestentity.search.SearchCriteria.ENTITY_JSON_FIELD_DELIMITER;
 
-@RequiredArgsConstructor
-@Getter
 @Slf4j
+@Getter
+@RequiredArgsConstructor
 public class SearchSpecification<T> implements Specification<T> {
 
     private final transient SearchCriteria criteria;
@@ -29,8 +28,8 @@ public class SearchSpecification<T> implements Specification<T> {
      * @param <X>  the type referenced by the resulted Path.
      * @return path for the field which could be located in the root type, or any internal types in the root.
      */
-    @NonNull
-    public static <X> Path<X> computeFieldPath(@NotNull Root<?> root, @NotNull String key) {
+    @Nonnull
+    public static <X> Path<X> computeFieldPath(@Nonnull Root<?> root, @Nonnull String key) {
         if (key.contains(ENTITY_JSON_FIELD_DELIMITER)) {
             return root.get(key.split(ENTITY_JSON_FIELD_DELIMITER)[0]);
         }
@@ -42,18 +41,33 @@ public class SearchSpecification<T> implements Specification<T> {
 
         // Otherwise we split the key by dots and process the internal entities:
         final StringTokenizer tokenizer = new StringTokenizer(key, ".");
-        Join<?, ?> join = root.join(tokenizer.nextToken());
+
+        Join<?, ?> join = getOrCreateJoin(root, tokenizer.nextToken());
 
         while (tokenizer.hasMoreTokens()) {
             final String internalEntityField = tokenizer.nextToken();
             if (!tokenizer.hasMoreTokens()) {
                 return join.get(internalEntityField);
             } else {
-                join = join.join(internalEntityField);
+                join = getOrCreateJoin(join, internalEntityField);
             }
         }
 
-        throw new IllegalStateException("Should not be thrown");
+        throw new IllegalStateException("There is wrong number of tokens");
+    }
+
+    private static Join<?, ?> getOrCreateJoin(From<?, ?> from, String attribute) {
+
+        for (Join<?, ?> join : from.getJoins()) {
+
+            boolean sameName = join.getAttribute().getName().equals(attribute);
+
+            if (sameName) {
+                return join;
+            }
+        }
+
+        return from.join(attribute);
     }
 
     @Override
@@ -61,6 +75,7 @@ public class SearchSpecification<T> implements Specification<T> {
                                  @Nonnull CriteriaQuery<?> query,
                                  @Nonnull CriteriaBuilder builder) {
         try {
+
             return getPredicate(root, builder);
         } catch (IllegalArgumentException ex) {
             log.error(ex.getMessage(), ex);
@@ -68,49 +83,88 @@ public class SearchSpecification<T> implements Specification<T> {
         }
     }
 
-    @NonNull
-    private Predicate getPredicate(@NotNull Root<T> root, @NotNull CriteriaBuilder builder) {
+    @Nonnull
+    private Predicate getPredicate(@Nonnull Root<T> root, @Nonnull CriteriaBuilder builder) {
         Predicate predicate;
 
+        final Object criteriaValue = criteria.getValue();
         switch (criteria.getOperation()) {
             case GREATER:
-                if (criteria.getValue() instanceof Instant) {
-                    predicate = builder.greaterThan(computeFieldPath(root), (Instant) criteria.getValue());
+                if (criteriaValue instanceof Instant) {
+                    predicate = builder.greaterThan(computeFieldPath(root), (Instant) criteriaValue);
                 } else {
-                    predicate = builder.greaterThan(computeFieldPath(root), criteria.getValue().toString());
+                    predicate = builder.greaterThan(computeFieldPath(root), criteriaValue.toString());
                 }
                 return predicate;
 
             case LESS:
-                if (criteria.getValue() instanceof Instant) {
-                    predicate = builder.lessThan(computeFieldPath(root), (Instant) criteria.getValue());
+                if (criteriaValue instanceof Instant) {
+                    predicate = builder.lessThan(computeFieldPath(root), (Instant) criteriaValue);
                 } else {
-                    predicate = builder.lessThan(computeFieldPath(root), criteria.getValue().toString());
+                    predicate = builder.lessThan(computeFieldPath(root), criteriaValue.toString());
+                }
+                return predicate;
+            case GREATER_EQUALS:
+                if (criteriaValue instanceof Instant) {
+                    predicate = builder.greaterThanOrEqualTo(computeFieldPath(root), (Instant) criteriaValue);
+                } else {
+                    predicate = builder.greaterThanOrEqualTo(computeFieldPath(root), criteriaValue.toString());
+                }
+                return predicate;
+
+            case LESS_EQUALS:
+                if (criteriaValue instanceof Instant) {
+                    predicate = builder.lessThanOrEqualTo(computeFieldPath(root), (Instant) criteriaValue);
+                } else {
+                    predicate = builder.lessThanOrEqualTo(computeFieldPath(root), criteriaValue.toString());
                 }
                 return predicate;
 
             case EQUALS:
-                Object criteriaValue = correctValueAccordingType(root);
-                return builder.equal(computeFieldPath(root), criteriaValue);
+                return builder.equal(computeFieldPath(root), correctValueAccordingType(root));
+
+            case NOT_EQUAL:
+                return builder.notEqual(computeFieldPath(root), correctValueAccordingType(root));
 
             case LIKE:
-                if (!(criteria.getValue() instanceof String)) {
+                if (!(criteriaValue instanceof String)) {
                     final String message = String.format("Operation %s is applicable only for strings",
                         SearchOperation.LIKE.name());
                     throw new IllegalStateException(message);
                 }
-                return builder.like(computeFieldPath(root), "%" + criteria.getValue() + "%");
-
+                return builder.like(computeFieldPath(root), "%" + criteriaValue + "%");
+            case LIKE_START:
+                if (!(criteriaValue instanceof String)) {
+                    final String message = String.format("Operation %s is applicable only for strings",
+                        SearchOperation.LIKE.name());
+                    throw new IllegalStateException(message);
+                }
+                return builder.like(computeFieldPath(root), criteriaValue + "%");
+            case LIKE_END:
+                if (!(criteriaValue instanceof String)) {
+                    final String message = String.format("Operation %s is applicable only for strings",
+                        SearchOperation.LIKE.name());
+                    throw new IllegalStateException(message);
+                }
+                return builder.like(computeFieldPath(root), "%" + criteriaValue);
             case IN:
-                if (!(criteria.getValue() instanceof Collection)) {
+                if (!(criteriaValue instanceof Collection)) {
                     final String message = String.format("Operation %s is applicable only for arrays",
                         SearchOperation.IN.name());
                     throw new IllegalStateException(message);
                 }
-                return computeFieldPath(root).in((Collection<?>) criteria.getValue());
+                return computeFieldPath(root).in((Collection<?>) criteriaValue);
+
+            case NOT_IN:
+                if (!(criteriaValue instanceof Collection)) {
+                    final String message = String.format("Operation %s is applicable only for arrays",
+                        SearchOperation.IN.name());
+                    throw new IllegalStateException(message);
+                }
+                return computeFieldPath(root).in((Collection<?>) criteriaValue).not();
 
             case JSON_LIKE:
-                if (!(criteria.getValue() instanceof String)) {
+                if (!(criteriaValue instanceof String)) {
                     final String message = String.format("Operation %s is applicable only for strings",
                         SearchOperation.JSON_LIKE);
                     throw new IllegalStateException(message);
@@ -125,7 +179,7 @@ public class SearchSpecification<T> implements Specification<T> {
                     "jsonSearchIgnoreCase",
                     String.class,
                     computeFieldPath(root),
-                    builder.literal("%" + criteria.getValue() + "%"),
+                    builder.literal("%" + criteriaValue + "%"),
                     builder.literal(jsonPath)
                 )
                     .isNotNull();
@@ -140,7 +194,7 @@ public class SearchSpecification<T> implements Specification<T> {
         }
     }
 
-    @NonNull
+    @Nonnull
     private Predicate getJsonContainsPredicate(@NotNull Root<T> root, @NotNull CriteriaBuilder builder) {
         String jsonPath;
         int jsonColumnPropertySeparatorIndex = criteria.getKey().indexOf(ENTITY_JSON_FIELD_DELIMITER);
@@ -159,7 +213,7 @@ public class SearchSpecification<T> implements Specification<T> {
             .isNotNull();
     }
 
-    @NonNull
+    @Nonnull
     private Predicate getJsonArrayContainsAnyPredicate(@NotNull Root<T> root,
                                                        @NotNull CriteriaBuilder builder) {
         if (!(criteria.getValue() instanceof List)) {
@@ -202,9 +256,8 @@ public class SearchSpecification<T> implements Specification<T> {
             ), 1);
     }
 
-    protected Object correctValueAccordingType(@NotNull Root<T> root) {
-        if (Set.of(".", SearchCriteria.ENTITY_JSON_FIELD_DELIMITER)
-            .stream().anyMatch(t -> criteria.getKey().contains(t))) {
+    protected Object correctValueAccordingType(@Nonnull Root<T> root) {
+        if (Set.of(".", ENTITY_JSON_FIELD_DELIMITER).stream().anyMatch(t -> criteria.getKey().contains(t))) {
             return criteria.getValue();
         }
         final Attribute<? super T, ?> attr = root.getModel().getAttributes()
@@ -222,8 +275,9 @@ public class SearchSpecification<T> implements Specification<T> {
         return criteriaValue;
     }
 
-    @NonNull
-    private <X> Path<X> computeFieldPath(@NotNull Root<T> root) {
+    @Nonnull
+    private <X> Path<X> computeFieldPath(@Nonnull Root<T> root) {
         return computeFieldPath(root, criteria.getKey());
     }
 }
+

@@ -3,9 +3,16 @@ package pro.komdosh.searchablerestentity.search;
 public enum SearchOperation {
     GREATER,
     LESS,
+    GREATER_EQUALS,
+    LESS_EQUALS,
+    NOT_EQUAL,
     EQUALS,
     LIKE,
+    LIKE_START,
+    LIKE_END,
+
     IN,
+    NOT_IN,
     JSON_LIKE,
 
     /**

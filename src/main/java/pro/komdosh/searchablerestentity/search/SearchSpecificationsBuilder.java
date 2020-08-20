@@ -5,7 +5,7 @@ import org.springframework.data.jpa.domain.Specification;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.function.BiFunction;
 
 class SearchSpecificationsBuilder<T> {
 
@@ -16,13 +16,11 @@ class SearchSpecificationsBuilder<T> {
     }
 
     SearchSpecificationsBuilder<T> withAll(@NonNull List<SearchCriteria> criteriaList) {
-        for (SearchCriteria criteria : criteriaList) {
-            with(criteria);
-        }
+        params.addAll(criteriaList);
         return this;
     }
 
-    private SearchSpecificationsBuilder<T> with(@NonNull SearchCriteria criteria) {
+    SearchSpecificationsBuilder<T> with(@NonNull SearchCriteria criteria) {
         params.add(criteria);
         return this;
     }
@@ -32,15 +30,35 @@ class SearchSpecificationsBuilder<T> {
             return null;
         }
 
-        List<Specification<T>> specs = params.stream()
-                .map(SearchSpecification<T>::new)
-                .collect(Collectors.toList());
+        return compose(params, (specHolder, sc) -> specHolder.specification.and(sc));
+    }
 
-        Specification<T> result = specs.get(0);
-
-        for (int i = 1; i < params.size(); i++) {
-            result = Specification.where(result).and(specs.get(i));
+    private Specification<T> compose(List<SearchCriteria> criteriaList, BiFunction<SpecificationHolder, Specification<T>, Specification<T>> compose) {
+        if (criteriaList == null || criteriaList.isEmpty()) {
+            return null;
         }
-        return result;
+
+        SpecificationHolder sh = new SpecificationHolder();
+
+        criteriaList.forEach(a -> {
+            Specification<T> spec = new SearchSpecification<>(a);
+
+            if (a.getAnd() != null) {
+                spec = spec.and(compose(a.getAnd(), (specHolder, sc) -> specHolder.specification.and(sc)));
+            }
+            if (a.getOr() != null) {
+                spec = spec.or(compose(a.getOr(), (specHolder, sc) -> specHolder.specification.or(sc)));
+            }
+            if (sh.specification != null) {
+                sh.specification = compose.apply(sh, spec);
+            } else {
+                sh.specification = spec;
+            }
+        });
+        return sh.specification;
+    }
+
+    class SpecificationHolder {
+        Specification<T> specification = null;
     }
 }

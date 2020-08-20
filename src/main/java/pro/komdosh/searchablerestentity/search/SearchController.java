@@ -15,7 +15,7 @@ import javax.validation.constraints.PositiveOrZero;
 import java.util.List;
 
 /**
- * Abstract search API Controller.
+ * Search API Controller.
  * <p>
  * Consider controller C of base URL "/entities". If C extends given class,
  * there would be a search method available:
@@ -49,6 +49,4 @@ public abstract class SearchController<D, S extends SearchService<?, D>> {
 
         return searchService.findAll(criteriaList, PageRequest.of(page, size, sort));
     }
-
-
 }
