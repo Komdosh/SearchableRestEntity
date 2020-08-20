@@ -1,5 +1,8 @@
 package pro.komdosh.searchablerestentity.search;
 
+/**
+ * Supported search operations
+ */
 public enum SearchOperation {
     GREATER,
     LESS,
@@ -10,15 +13,15 @@ public enum SearchOperation {
     LIKE,
     LIKE_START,
     LIKE_END,
-
     IN,
     NOT_IN,
     JSON_LIKE,
 
     /**
-     * Matches json elements.
+     * Matches json contains elements.
      * <p>
-     * For example, key="json->a" value="123"  will match {"a": 123}
+     * Example request: {key: "json->name" value: "Mark", "operation":"JSON_CONTAINS"}
+     * will match {"name": "Mark"}
      */
     JSON_CONTAINS,
 

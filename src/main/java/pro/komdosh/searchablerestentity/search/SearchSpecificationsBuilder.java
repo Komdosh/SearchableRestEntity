@@ -7,7 +7,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BiFunction;
 
-class SearchSpecificationsBuilder<T> {
+/**
+ * Build request from list of {@link SearchCriteria}
+ * Outer array items compose as <i>and</i> operation.
+ *
+ * @param <E> represents corresponding entity type.
+ */
+class SearchSpecificationsBuilder<E> {
 
     private final List<SearchCriteria> params;
 
@@ -15,17 +21,17 @@ class SearchSpecificationsBuilder<T> {
         params = new ArrayList<>();
     }
 
-    SearchSpecificationsBuilder<T> withAll(@NonNull List<SearchCriteria> criteriaList) {
+    SearchSpecificationsBuilder<E> withAll(@NonNull List<SearchCriteria> criteriaList) {
         params.addAll(criteriaList);
         return this;
     }
 
-    SearchSpecificationsBuilder<T> with(@NonNull SearchCriteria criteria) {
+    SearchSpecificationsBuilder<E> with(@NonNull SearchCriteria criteria) {
         params.add(criteria);
         return this;
     }
 
-    public Specification<T> build() {
+    public Specification<E> build() {
         if (params.isEmpty()) {
             return null;
         }
@@ -33,7 +39,7 @@ class SearchSpecificationsBuilder<T> {
         return compose(params, (specHolder, sc) -> specHolder.specification.and(sc));
     }
 
-    private Specification<T> compose(List<SearchCriteria> criteriaList, BiFunction<SpecificationHolder, Specification<T>, Specification<T>> compose) {
+    private Specification<E> compose(List<SearchCriteria> criteriaList, BiFunction<SpecificationHolder, Specification<E>, Specification<E>> compose) {
         if (criteriaList == null || criteriaList.isEmpty()) {
             return null;
         }
@@ -41,7 +47,7 @@ class SearchSpecificationsBuilder<T> {
         SpecificationHolder sh = new SpecificationHolder();
 
         criteriaList.forEach(a -> {
-            Specification<T> spec = new SearchSpecification<>(a);
+            Specification<E> spec = new SearchSpecification<>(a);
 
             if (a.getAnd() != null) {
                 spec = spec.and(compose(a.getAnd(), (specHolder, sc) -> specHolder.specification.and(sc)));
@@ -59,6 +65,6 @@ class SearchSpecificationsBuilder<T> {
     }
 
     class SpecificationHolder {
-        Specification<T> specification = null;
+        Specification<E> specification = null;
     }
 }

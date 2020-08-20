@@ -8,10 +8,7 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import java.util.List;
 
 /**
- * Abstract base class for services willing to provide search functionality.
- * <p>
- * Skeletal implementation merely using {@link JpaSpecificationExecutor#findAll(Specification, Pageable)}.
- * If you need some effective filtering, e.g. for security purposes, you would need to override some methods.
+ * Abstract search service class which provides find all functionality by {@link Specification<E>}
  *
  * @param <E> entity to search
  * @param <D> Dto, corresponding to the entity

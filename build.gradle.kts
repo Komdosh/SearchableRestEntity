@@ -2,18 +2,18 @@ import org.gradle.jvm.tasks.Jar
 
 plugins {
     java
-    val kotlinVersion = "1.3.72"
-    val springBootVersion = "2.3.2.RELEASE"
+    val kotlinVersion = "1.4.0"
+    val springBootVersion = "2.3.3.RELEASE"
     id("org.springframework.boot") version springBootVersion
-    id("io.spring.dependency-management") version "1.0.9.RELEASE"
+    id("io.spring.dependency-management") version "1.0.10.RELEASE"
     kotlin("jvm") version kotlinVersion
     kotlin("plugin.spring") version kotlinVersion
     kotlin("plugin.jpa") version kotlinVersion
 }
 
 buildscript {
-    val kotlinVersion = "1.3.72"
-    val springBootVersion = "2.3.2.RELEASE"
+    val kotlinVersion = "1.4.0"
+    val springBootVersion = "2.3.3.RELEASE"
     repositories {
         jcenter()
         mavenCentral()

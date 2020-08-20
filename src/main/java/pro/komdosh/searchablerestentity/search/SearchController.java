@@ -15,13 +15,9 @@ import javax.validation.constraints.PositiveOrZero;
 import java.util.List;
 
 /**
- * Search API Controller.
+ * Abstract API controller for search requests
  * <p>
- * Consider controller C of base URL "/entities". If C extends given class,
- * there would be a search method available:
- * <ul>
- * <li>POST /entities/search with payload as {@link List<SearchCriteria>}</li>
- * </ul>
+ * make POST endpoint `/{entityName}/search` with payload as {@link List<SearchCriteria>}
  *
  * @param <D> Dto, corresponding to the searched entity
  * @param <S> search service corresponding to the entity

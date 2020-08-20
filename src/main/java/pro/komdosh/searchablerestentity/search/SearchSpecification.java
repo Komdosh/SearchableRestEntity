@@ -20,6 +20,7 @@ import static pro.komdosh.searchablerestentity.search.SearchCriteria.ENTITY_JSON
 public class SearchSpecification<T> implements Specification<T> {
 
     private final transient SearchCriteria criteria;
+    private final String ONLY_STRINGS_ERROR = "Operation %s is applicable only for strings";
 
     /**
      * Splits the criteria key by dots and joins the internal entities if needed.
@@ -75,7 +76,7 @@ public class SearchSpecification<T> implements Specification<T> {
                                  @Nonnull CriteriaQuery<?> query,
                                  @Nonnull CriteriaBuilder builder) {
         try {
-
+            query.distinct(true);
             return getPredicate(root, builder);
         } catch (IllegalArgumentException ex) {
             log.error(ex.getMessage(), ex);
@@ -88,6 +89,7 @@ public class SearchSpecification<T> implements Specification<T> {
         Predicate predicate;
 
         final Object criteriaValue = criteria.getValue();
+
         switch (criteria.getOperation()) {
             case GREATER:
                 if (criteriaValue instanceof Instant) {
@@ -128,21 +130,21 @@ public class SearchSpecification<T> implements Specification<T> {
 
             case LIKE:
                 if (!(criteriaValue instanceof String)) {
-                    final String message = String.format("Operation %s is applicable only for strings",
+                    final String message = String.format(ONLY_STRINGS_ERROR,
                         SearchOperation.LIKE.name());
                     throw new IllegalStateException(message);
                 }
                 return builder.like(computeFieldPath(root), "%" + criteriaValue + "%");
             case LIKE_START:
                 if (!(criteriaValue instanceof String)) {
-                    final String message = String.format("Operation %s is applicable only for strings",
+                    final String message = String.format(ONLY_STRINGS_ERROR,
                         SearchOperation.LIKE.name());
                     throw new IllegalStateException(message);
                 }
                 return builder.like(computeFieldPath(root), criteriaValue + "%");
             case LIKE_END:
                 if (!(criteriaValue instanceof String)) {
-                    final String message = String.format("Operation %s is applicable only for strings",
+                    final String message = String.format(ONLY_STRINGS_ERROR,
                         SearchOperation.LIKE.name());
                     throw new IllegalStateException(message);
                 }
@@ -165,7 +167,7 @@ public class SearchSpecification<T> implements Specification<T> {
 
             case JSON_LIKE:
                 if (!(criteriaValue instanceof String)) {
-                    final String message = String.format("Operation %s is applicable only for strings",
+                    final String message = String.format(ONLY_STRINGS_ERROR,
                         SearchOperation.JSON_LIKE);
                     throw new IllegalStateException(message);
                 }

@@ -20,3 +20,7 @@ Hsrc/main/java/pro/komdosh/searchablerestentity/search/SearchService.java,6\0\6
 Nsrc/main/java/pro/komdosh/searchablerestentity/search/SearchSpecification.java,6\6\66180d15a9b9367aef7a1d6b94c1afc2235d3e98
 †
 Vsrc/main/java/pro/komdosh/searchablerestentity/search/SearchSpecificationsBuilder.java,a\5\a570b69ebfd242faed00867f3634578f2ce230f2
+‚
+Rsrc/main/java/pro/komdosh/searchablerestentity/search/NoSearchResultException.java,0\d\0d09e5cc4bf81912229af6658b69daf8756e562e
+x
+Hsrc/main/java/pro/komdosh/searchablerestentity/SearchableRestEntity.java,d\7\d73b9643fd15a617757cecd3fa44466856ec19bc
