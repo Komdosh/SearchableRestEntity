@@ -1,7 +1,14 @@
 import org.gradle.jvm.tasks.Jar
+import java.io.FileInputStream
+import java.util.*
+
+val githubPropertiesFile = rootProject.file("github.properties");
+val githubProperties = Properties()
+githubProperties.load(FileInputStream(githubPropertiesFile))
 
 plugins {
     java
+    id("maven-publish")
     val kotlinVersion = "1.4.0"
     val springBootVersion = "2.3.3.RELEASE"
     id("org.springframework.boot") version springBootVersion
@@ -69,5 +76,29 @@ tasks {
 tasks {
     "build" {
         dependsOn("fatJar")
+    }
+}
+
+publishing {
+    repositories {
+        maven {
+            name = "SearchableRestEntity"
+            url = uri("https://maven.pkg.github.com/Komdosh/SearchableRestEntity")
+            credentials {
+                username = githubProperties["gpr.user"] as String? ?: System.getenv("USERNAME")
+                password = githubProperties["gpr.key"] as String? ?: System.getenv("TOKEN")
+            }
+        }
+    }
+
+    publications {
+        create<MavenPublication>("gpr") {
+            run {
+                groupId = project.group as String?
+                artifactId = project.name
+                version = project.version as String?
+                artifact("$buildDir/libs/$artifactId-$version.jar")
+            }
+        }
     }
 }
