@@ -8,7 +8,7 @@ public enum SearchOperation {
     LESS,
     GREATER_EQUALS,
     LESS_EQUALS,
-    NOT_EQUAL,
+    NOT_EQUALS,
     EQUALS,
     LIKE,
     LIKE_START,

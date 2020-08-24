@@ -64,14 +64,14 @@ public class SearchSpecification<T> implements Specification<T> {
 
         for (Join<?, ?> join : from.getJoins()) {
 
-            boolean sameName = join.getAttribute().getName().equals(attribute);
+            boolean sameName = join.getAttribute().getName().equals(attribute) && join.getJoinType() == JoinType.LEFT;
 
             if (sameName) {
                 return join;
             }
         }
 
-        return from.join(attribute);
+        return from.join(attribute, JoinType.LEFT);
     }
 
     @Override
@@ -128,7 +128,7 @@ public class SearchSpecification<T> implements Specification<T> {
             case EQUALS:
                 return builder.equal(computeFieldPath(root), correctValueAccordingType(root));
 
-            case NOT_EQUAL:
+            case NOT_EQUALS:
                 return builder.notEqual(computeFieldPath(root), correctValueAccordingType(root));
 
             case LIKE:
