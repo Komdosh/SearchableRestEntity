@@ -33,7 +33,8 @@ buildscript {
 }
 
 group = "pro.komdosh"
-version = "0.0.2"
+description = "searchable-rest-entity"
+version = "0.0.4"
 
 repositories {
     jcenter()

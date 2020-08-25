@@ -1,2 +1,2 @@
-rootProject.name = "SearchableRestEntity"
+rootProject.name = "searchable-rest-entity"
 
