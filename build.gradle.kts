@@ -9,32 +9,25 @@ githubProperties.load(FileInputStream(githubPropertiesFile))
 plugins {
     java
     id("maven-publish")
-    val kotlinVersion = "1.4.0"
-    val springBootVersion = "2.3.3.RELEASE"
+    val springBootVersion = "2.4.0"
     id("org.springframework.boot") version springBootVersion
     id("io.spring.dependency-management") version "1.0.10.RELEASE"
-    kotlin("jvm") version kotlinVersion
-    kotlin("plugin.spring") version kotlinVersion
-    kotlin("plugin.jpa") version kotlinVersion
 }
 
 buildscript {
-    val kotlinVersion = "1.4.0"
-    val springBootVersion = "2.3.3.RELEASE"
+    val springBootVersion = "2.4.0"
     repositories {
         jcenter()
         mavenCentral()
     }
     dependencies {
-        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion")
-        classpath("org.jetbrains.kotlin:kotlin-allopen:$kotlinVersion")
         classpath("org.springframework.boot:spring-boot-gradle-plugin:$springBootVersion")
     }
 }
 
 group = "pro.komdosh"
 description = "searchable-rest-entity"
-version = "0.0.4"
+version = "0.0.5"
 
 repositories {
     jcenter()
@@ -55,6 +48,7 @@ dependencies {
     //DTO Mapping
     implementation("org.mapstruct:mapstruct:1.3.1.Final")
     annotationProcessor("org.mapstruct:mapstruct-processor:1.3.1.Final")
+    implementation("org.apache.commons:commons-lang3:3.10")
 
     implementation("com.github.spullara.mustache.java:compiler:0.9.6")
     annotationProcessor("com.google.auto.service:auto-service:1.0-rc5")

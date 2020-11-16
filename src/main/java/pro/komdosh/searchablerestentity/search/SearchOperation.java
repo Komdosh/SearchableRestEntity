@@ -13,6 +13,10 @@ public enum SearchOperation {
     LIKE,
     LIKE_START,
     LIKE_END,
+
+    EXCLUDE_IN,
+    EXCLUDE_LIKE,
+
     IN,
     NOT_IN,
     JSON_LIKE,

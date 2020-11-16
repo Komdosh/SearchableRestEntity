@@ -35,7 +35,6 @@ public final class EntityScope {
         return date.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
     }
 
-
     public String getEntityDto() {
         return entityName + "Dto";
     }

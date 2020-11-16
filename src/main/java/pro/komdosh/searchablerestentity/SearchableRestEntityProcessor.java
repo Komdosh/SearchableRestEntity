@@ -20,11 +20,11 @@ import java.util.Set;
 @SupportedAnnotationTypes({"pro.komdosh.searchablerestentity.SearchableRestEntity"})
 public class SearchableRestEntityProcessor extends AbstractProcessor {
 
-    private static final String controllerTemplate = "generation/controller.mustache";
-    private static final String repositoryTemplate = "generation/repository.mustache";
-    private static final String dtoTemplate = "generation/dto.mustache";
-    private static final String serviceTemplate = "generation/service.mustache";
-    private static final String mapperTemplate = "generation/mapper.mustache";
+    private static final String CONTROLLER_TEMPLATE = "generation/controller.mustache";
+    private static final String REPOSITORY_TEMPLATE = "generation/repository.mustache";
+    private static final String DTO_TEMPLATE = "generation/dto.mustache";
+    private static final String SERVICE_TEMPLATE = "generation/service.mustache";
+    private static final String MAPPER_TEMPLATE = "generation/mapper.mustache";
 
     @Override
     public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
@@ -51,12 +51,12 @@ public class SearchableRestEntityProcessor extends AbstractProcessor {
             TypeElement typeElement = (TypeElement) element;
             EntityScope scope = createModel(typeElement, path);
             if (useEntityAsDto) {
-                writeClass(element, scope, new DefaultMustacheFactory().compile(dtoTemplate), scope.getEntityDtoClassNameWithPackage());
+                writeClass(element, scope, new DefaultMustacheFactory().compile(DTO_TEMPLATE), scope.getEntityDtoClassNameWithPackage());
             }
-            writeClass(element, scope, new DefaultMustacheFactory().compile(mapperTemplate), scope.getEntityMapperClassNameWithPackage());
-            writeClass(element, scope, new DefaultMustacheFactory().compile(repositoryTemplate), scope.getRepositoryClassNameWithPackage());
-            writeClass(element, scope, new DefaultMustacheFactory().compile(serviceTemplate), scope.getEntityServiceClassNameWithPackage());
-            writeClass(element, scope, new DefaultMustacheFactory().compile(controllerTemplate), scope.getControllerClassNameWithPackage());
+            writeClass(element, scope, new DefaultMustacheFactory().compile(MAPPER_TEMPLATE), scope.getEntityMapperClassNameWithPackage());
+            writeClass(element, scope, new DefaultMustacheFactory().compile(REPOSITORY_TEMPLATE), scope.getRepositoryClassNameWithPackage());
+            writeClass(element, scope, new DefaultMustacheFactory().compile(SERVICE_TEMPLATE), scope.getEntityServiceClassNameWithPackage());
+            writeClass(element, scope, new DefaultMustacheFactory().compile(CONTROLLER_TEMPLATE), scope.getControllerClassNameWithPackage());
         }
     }
 

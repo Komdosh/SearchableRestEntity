@@ -3,17 +3,16 @@ package pro.komdosh.searchablerestentity.search;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.jpa.domain.Specification;
 
 import javax.annotation.Nonnull;
 import javax.persistence.criteria.*;
 import javax.persistence.metamodel.Attribute;
 import javax.validation.constraints.NotNull;
+import java.lang.reflect.Field;
 import java.time.Instant;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
-import java.util.StringTokenizer;
+import java.util.*;
 
 import static pro.komdosh.searchablerestentity.search.SearchCriteria.ENTITY_JSON_FIELD_DELIMITER;
 
@@ -22,8 +21,8 @@ import static pro.komdosh.searchablerestentity.search.SearchCriteria.ENTITY_JSON
 @RequiredArgsConstructor
 public class SearchSpecification<T> implements Specification<T> {
 
+    private final static String ONLY_STRINGS_ERROR = "Operation %s is applicable only for strings";
     private final transient SearchCriteria criteria;
-    private final String ONLY_STRINGS_ERROR = "Operation %s is applicable only for strings";
 
     /**
      * Splits the criteria key by dots and joins the internal entities if needed.
@@ -80,7 +79,7 @@ public class SearchSpecification<T> implements Specification<T> {
                                  @Nonnull CriteriaBuilder builder) {
         try {
             query.distinct(true);
-            return getPredicate(root, builder);
+            return getPredicate(root, query, builder);
         } catch (IllegalArgumentException ex) {
             log.error(ex.getMessage(), ex);
             throw new IllegalStateException("Wrong search field " + criteria.getKey());
@@ -88,7 +87,7 @@ public class SearchSpecification<T> implements Specification<T> {
     }
 
     @Nonnull
-    private Predicate getPredicate(@Nonnull Root<T> root, @Nonnull CriteriaBuilder builder) {
+    private Predicate getPredicate(@Nonnull Root<T> root, @Nonnull CriteriaQuery<?> criteriaQuery, @Nonnull CriteriaBuilder builder) {
         Predicate predicate;
 
         final Object criteriaValue = criteria.getValue();
@@ -167,7 +166,43 @@ public class SearchSpecification<T> implements Specification<T> {
                     throw new IllegalStateException(message);
                 }
                 return computeFieldPath(root).in((Collection<?>) criteriaValue).not();
+            case EXCLUDE_IN:
+                if (!(criteriaValue instanceof Collection)) {
+                    final String message = String.format("Operation %s is applicable only for arrays",
+                        SearchOperation.EXCLUDE_IN.name());
+                    throw new IllegalStateException(message);
+                }
+                Subquery sq = criteriaQuery.subquery(criteriaQuery.getResultType());
 
+                final Root<?> from = sq.from(computeFieldPath(root).getParentPath().getJavaType());
+
+                Field field = Arrays.stream(from.getJavaType().getDeclaredFields())
+                    .filter(t -> t.getType().equals(root.getJavaType())).findFirst()
+                    .orElseThrow(() -> new IllegalArgumentException(String.format("There is no %s field on class %s",
+                        root.getJavaType(), from.getJavaType())));
+
+                Join sqEmp = from.join(field.getName());
+                sq.select(sqEmp).where(from.get(StringUtils.substringAfterLast(criteria.getKey(), ".")).in(criteriaValue));
+
+                return builder.in(root).value(sq).not();
+            case EXCLUDE_LIKE:
+                if (!(criteriaValue instanceof String)) {
+                    final String message = String.format("Operation %s is applicable only for strings",
+                        SearchOperation.EXCLUDE_LIKE.name());
+                    throw new IllegalStateException(message);
+                }
+                Subquery likeSubquery = criteriaQuery.subquery(criteriaQuery.getResultType());
+
+                final Root<?> fromSubquery = likeSubquery.from(computeFieldPath(root).getParentPath().getJavaType());
+
+                Field fieldSubquery = Arrays.stream(fromSubquery.getJavaType().getDeclaredFields())
+                    .filter(t -> t.getType().equals(root.getJavaType())).findFirst()
+                    .orElseThrow(() -> new IllegalArgumentException(String.format("There is no %s field on class %s",
+                        root.getJavaType(), fromSubquery.getJavaType())));
+
+                Join sqJoin = fromSubquery.join(fieldSubquery.getName());
+                likeSubquery.select(sqJoin).where(builder.like(fromSubquery.get(StringUtils.substringAfterLast(criteria.getKey(), ".")), "%" + criteriaValue + "%"));
+                return builder.in(root).value(likeSubquery).not();
             case JSON_LIKE:
                 if (!(criteriaValue instanceof String)) {
                     final String message = String.format(ONLY_STRINGS_ERROR,
