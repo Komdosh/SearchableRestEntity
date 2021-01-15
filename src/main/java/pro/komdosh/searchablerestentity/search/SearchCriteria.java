@@ -49,4 +49,6 @@ public class SearchCriteria {
     @NotNull
     private Object value;
 
+    @Nullable
+    private String alias;
 }

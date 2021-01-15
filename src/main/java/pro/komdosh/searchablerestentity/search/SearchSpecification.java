@@ -32,7 +32,7 @@ public class SearchSpecification<T> implements Specification<T> {
      * @return path for the field which could be located in the root type, or any internal types in the root.
      */
     @Nonnull
-    public static <X> Path<X> computeFieldPath(@Nonnull Root<?> root, @Nonnull String key) {
+    public static <X> Path<X> computeFieldPath(@Nonnull Root<?> root, @Nonnull String key, String alias) {
         if (key.contains(ENTITY_JSON_FIELD_DELIMITER)) {
             return root.get(key.split(ENTITY_JSON_FIELD_DELIMITER)[0]);
         }
@@ -45,32 +45,39 @@ public class SearchSpecification<T> implements Specification<T> {
         // Otherwise we split the key by dots and process the internal entities:
         final StringTokenizer tokenizer = new StringTokenizer(key, ".");
 
-        Join<?, ?> join = getOrCreateJoin(root, tokenizer.nextToken());
-
-        while (tokenizer.hasMoreTokens()) {
+        String joinRef = tokenizer.nextToken();
+        From<?, ?> join = root;
+        do {
             final String internalEntityField = tokenizer.nextToken();
             if (!tokenizer.hasMoreTokens()) {
-                return join.get(internalEntityField);
+                return getOrCreateJoin(join, joinRef, alias).get(internalEntityField);
             } else {
-                join = getOrCreateJoin(join, internalEntityField);
+                join = getOrCreateJoin(join, joinRef, joinRef);
+
+                joinRef = internalEntityField;
             }
-        }
+        } while (tokenizer.hasMoreTokens());
 
         throw new IllegalStateException("There is wrong number of tokens");
     }
 
-    private static Join<?, ?> getOrCreateJoin(From<?, ?> from, String attribute) {
+    private static Join<?, ?> getOrCreateJoin(From<?, ?> from, String attribute, String alias) {
+        if (StringUtils.isBlank(alias)) {
+            return from.join(attribute, JoinType.LEFT);
+        }
 
         for (Join<?, ?> join : from.getJoins()) {
 
-            boolean sameName = join.getAttribute().getName().equals(attribute) && join.getJoinType() == JoinType.LEFT;
+            boolean sameName = join.getAlias().equals(alias) && join.getJoinType() == JoinType.LEFT;
 
             if (sameName) {
                 return join;
             }
         }
 
-        return from.join(attribute, JoinType.LEFT);
+        final Join<?, ?> join = from.join(attribute, JoinType.LEFT);
+        join.alias(alias);
+        return join;
     }
 
     @Override
@@ -317,7 +324,7 @@ public class SearchSpecification<T> implements Specification<T> {
 
     @Nonnull
     private <X> Path<X> computeFieldPath(@Nonnull Root<T> root) {
-        return computeFieldPath(root, criteria.getKey());
+        return computeFieldPath(root, criteria.getKey(), criteria.getAlias());
     }
 }
 

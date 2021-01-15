@@ -9,13 +9,13 @@ githubProperties.load(FileInputStream(githubPropertiesFile))
 plugins {
     java
     id("maven-publish")
-    val springBootVersion = "2.4.0"
+    val springBootVersion = "2.4.1"
     id("org.springframework.boot") version springBootVersion
-    id("io.spring.dependency-management") version "1.0.10.RELEASE"
+    id("io.spring.dependency-management") version "1.0.11.RELEASE"
 }
 
 buildscript {
-    val springBootVersion = "2.4.0"
+    val springBootVersion = "2.4.1"
     repositories {
         jcenter()
         mavenCentral()
@@ -27,7 +27,7 @@ buildscript {
 
 group = "pro.komdosh"
 description = "searchable-rest-entity"
-version = "0.0.5"
+version = "0.0.6"
 
 repositories {
     jcenter()
@@ -50,9 +50,9 @@ dependencies {
     annotationProcessor("org.mapstruct:mapstruct-processor:1.3.1.Final")
     implementation("org.apache.commons:commons-lang3:3.10")
 
-    implementation("com.github.spullara.mustache.java:compiler:0.9.6")
-    annotationProcessor("com.google.auto.service:auto-service:1.0-rc5")
-    compileOnly("com.google.auto.service:auto-service:1.0-rc5")
+    implementation("com.github.spullara.mustache.java:compiler:0.9.7")
+    annotationProcessor("com.google.auto.service:auto-service:1.0-rc7")
+    compileOnly("com.google.auto.service:auto-service:1.0-rc7")
 }
 
 

@@ -39,7 +39,7 @@ Body of search request can contains a complex queries:
     "key": "givenName",
     "operation": "EQUALS",
     "value": "Mark",
-    "and": [
+    "or": [
         {
             "key": "playerScore.totalScore",
             "operation": "GREATER",
